@@ -41,10 +41,10 @@ export PATH=$PATH:${HOME}/sw/tstools/bin
 export PATH=$PATH:${HOME}/.cabal/bin
 
 # Muddle
-if [ -x ${HOME}/bin/setup_muddle ]
+if [ -x ${HOME}/bin/setup_muddle.sh ]
 then
-  alias setup_muddle='source ${HOME}/bin/setup_muddle'
-  source ${HOME}/bin/setup_muddle
+  alias setup_muddle='source ${HOME}/bin/setup_muddle.sh'
+  source ${HOME}/bin/setup_muddle.sh
 fi
 
 # Opening a file in an existing Vim
