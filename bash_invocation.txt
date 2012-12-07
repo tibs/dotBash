@@ -1,0 +1,50 @@
+From reading the bash manual, and particularly section INVOCATION, we learn
+that startup files should be invoked as follows:
+
+1. For a login shell:
+
+    a. if ``/etc/profile`` exists, execute that
+    b. look for the first of the following that can be found:
+
+       * ``~/.bash_profile``
+       * ``~/.bash_login``
+       * ``~/.profile``
+
+       and execute it. Remember, only the first one found.
+       This step can be suppressed with ``--noprofile``.
+
+       If such a shell wants to execute ``~/.bashrc``, it needs to do it "by
+       hand"
+
+2. For an interactive non-login shell, it executes:
+
+   * ``/etc/bash.bashrc`` and
+   * ``~/.bashrc``
+
+   if they exist. This can be stopped using ``--norc``.
+
+3. For a non-interactive use, e.g., running a shell script, it acts
+   more-or-less as if executing::
+
+     if [ -b "$BASH_ENV" ]; then . "$BASH_ENV"; fi
+
+4. If it is invoked as ``sh``, either as a login shell, then it tries to
+   execute:
+
+   * ``/etc/profile``
+   * ``~/.profile``
+
+   As an interactive shell, it tries to execute whatever file the ENV
+   environment variable expands to. As a non-interactive shell, it doesn't try
+   to execute any startup files.
+
+There's more, but it's more specific. See the man page, and hope it's
+accurate.
+
+In this context, a login shell is one whose argument zero starts with "-", or
+a shell with "--login" specified, and an interactive shell is one started
+without non-option arguments or the "-c" option, and whose stdin and stdout
+are both connected to terminals, or a shell started with "-i". For an
+interactive shell, "PS1" is set, and "$-" includes "i". 
+
+.. vim: set filetype=rst tabstop=8 softtabstop=2 shiftwidth=2 expandtab:

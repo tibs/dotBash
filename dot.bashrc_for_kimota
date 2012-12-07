@@ -1,0 +1,13 @@
+# Stuff specific to kimota
+
+# KBUS
+export PYTHONPATH=${PYTHONPATH}:${HOME}/sw/kbus/python
+
+# Java home is needed for RAW dev
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk
+
+# Use docutils from a subversion checkout
+# The tools from here tend to end with '.py'
+export PATH=${HOME}/sw/docutils/tools:${PATH}
+
+# vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:
