@@ -41,7 +41,7 @@ export PATH=$PATH:${HOME}/sw/tstools/bin
 export PATH=$PATH:${HOME}/.cabal/bin
 
 # Muddle
-if [ -x ${HOME}/bin/setup_muddle.sh ]
+if [ -e ${HOME}/bin/setup_muddle.sh ]
 then
   alias setup_muddle='source ${HOME}/bin/setup_muddle.sh'
   source ${HOME}/bin/setup_muddle.sh
