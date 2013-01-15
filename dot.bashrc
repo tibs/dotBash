@@ -112,8 +112,11 @@ fi
 
 if [ "$PS1" ]
 then
-  # Disable the capslock key, if possible
-  xmodmap -e "remove lock = Caps_Lock"
+  # By default, Mac OS X does not run X11. Running xmodmap would start it...
+  if [ "`uname`" != "Darwin" ]; then
+    # Disable the capslock key, if possible
+    xmodmap -e "remove lock = Caps_Lock"
+  fi
 
   # check the window size after each command and, if necessary,
   # update the values of LINES and COLUMNS.
