@@ -75,6 +75,12 @@ if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
   export WORKON_HOME=$HOME/env
   export PROJECT_HOME=$HOME/sw
   source /usr/local/bin/virtualenvwrapper.sh
+
+  # We may also want the following, to make pip aware of virtualenvwrapper
+  export PIP_VIRTUALENV_BASE=$WORKON_HOME
+  # and to allow use of pip to detect an active virtualenv without needing the
+  # -E switch
+  export PIP_RESPECT_VIRTUALENV=true
 fi
 
 # I can never remember the switches to diff I use for patch preparation
