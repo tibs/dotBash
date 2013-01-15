@@ -91,7 +91,7 @@ alias patchdiff="diff -NbBrua"
 # Enable colour in listings at the terminal
 # HOSTTYPE appears to be defined on spot (which is FreeBSD), and not on
 # (for instance) sparkler, which is Linux
-if [ "$HOSTTYPE" == "FreeBSD" ]
+if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
 then
     alias ls='ls -G'
 else
