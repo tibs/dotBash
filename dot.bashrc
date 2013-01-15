@@ -69,6 +69,14 @@ export HISTCONTROL=ignoreboth
 # which would ignore duplicates, "ls" on a line by itself, and the "bg", "fg"
 # and "exit" commands.
 
+# Have we got virtualenvwrapper?
+# If so, use "workon" to find out what virtualenv's exist, and to choose one
+if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+  export WORKON_HOME=$HOME/env
+  export PROJECT_HOME=$HOME/sw
+  source /usr/local/bin/virtualenvwrapper.sh
+fi
+
 # I can never remember the switches to diff I use for patch preparation
 # - this is as much a convenient memo as an actual command to use
 # Usage: patchdiff <old-dir> <new-dir>
