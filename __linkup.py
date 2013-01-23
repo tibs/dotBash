@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 
 """Make links for my BASH dot files in my home directory
+
+Arguably, should not link dot.bashrc_for_<machine> unless this is
+<machine>.
 """
 
 import sys
