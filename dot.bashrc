@@ -29,7 +29,8 @@ export MANPATH=${HOME}/local/vim/share/man:${MANPATH}
 # (e.g., written in Python), mostly stored on github
 export PATH=$PATH:${HOME}/bin
 # The "local/bin" directory is compiled code
-export PATH=$PATH:${HOME}/local/bin
+# Take files from there preferentially
+export PATH=${HOME}/local/bin:$PATH
 
 # And a local man directory might be useful too...
 export MANPATH=$MANPATH:${HOME}/man
@@ -46,6 +47,9 @@ then
   alias setup_muddle='source ${HOME}/bin/setup_muddle.sh'
   source ${HOME}/bin/setup_muddle.sh
 fi
+
+# todo.txt
+alias todo="${HOME}/sw/todo.txt_cli/todo.sh"
 
 # Opening a file in an existing Vim
 alias gv="gvim --remote-silent"
