@@ -51,6 +51,9 @@ fi
 # todo.txt
 alias todo="${HOME}/sw/todo.txt_cli/todo.sh"
 
+# when
+alias when="${HOME}/sw/when/when"
+
 # Opening a file in an existing Vim
 alias gv="gvim --remote-silent"
 # And in a new tab
