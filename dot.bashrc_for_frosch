@@ -20,6 +20,9 @@ export PATH="$HOME/Library/Haskell/bin:$PATH"
 # The homebrew version of python
 alias hpython=$(brew --prefix)/bin/python
 
+# Homebrew libraries made available to Python
+export PYTHONPATH=${PYTHONPATH}:$(brew --prefix)/lib/python2.7/site-packages
+
 ## I want to take my docutils stuff directly from the source directories,
 ## so that I work with the latest CVS code, and don't have to keep installing
 ## things.
