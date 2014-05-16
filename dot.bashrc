@@ -19,7 +19,7 @@ then
 fi
 
 export CVS_RSH=ssh
-export EDITOR=vim
+export EDITOR=/usr/bin/vim
 
 # Locally built programs
 
@@ -37,6 +37,9 @@ export MANPATH=$MANPATH:${HOME}/man
 
 # Make my MPEG tools easily available
 export PATH=$PATH:${HOME}/sw/tstools/bin
+
+# Make weld available
+export PATH=$PATH:${HOME}/sw/weld
 
 # And Haskell stuff
 export PATH=$PATH:${HOME}/.cabal/bin
@@ -62,6 +65,11 @@ alias pysh="ipython -p sh"
 # Run a new shell "inside" ssh-agent, so I can use ssh-add
 alias ssh_shell=" exec ssh-agent bash"
 # but also see my .profile which uses keychain instead...
+
+# What...
+alias what="${HOME}/Dropbox/what.py"
+
+alias gitlog="git --no-pager log --oneline --graph --all --decorate"
 
 # Ask bash not to remember duplicate commands in its history list
 export HISTCONTROL=ignoredups
