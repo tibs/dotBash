@@ -1,0 +1,184 @@
+# .bashrc
+#
+# This is the bashrc on my blade. It is not yet factored into the github
+# dotBash mechanism.
+
+# Remember to look at /etc/vxprofile as well
+
+# Blade setup
+export P4CLIENT=$(whoami)
+export EDITOR=/usr/bin/vim
+
+# Tell Perforce to use meld as a difference tool
+export P4MERGE=${HOME}/bin/p4mergemerge
+
+export PATH=${HOME}/cachelogic/utils:${PATH}
+
+# For VTF tests and django
+export PYTHONPATH=$PYTHONPATH:/home/$(whoami)/cachelogic/vxtest/framework/manager/
+
+# The "bin" directory is mostly platform independent things
+# (e.g., written in Python), mostly stored on github
+export PATH=$PATH:${HOME}/bin
+
+# The "local/bin" directory is compiled code
+# Take files from there preferentially
+export PATH=${HOME}/local/bin:$PATH
+
+# And a local man directory might be useful too...
+export MANPATH=$MANPATH:${HOME}/man
+
+# Opening a file in an existing Vim
+alias gv="gvim --remote-silent"
+# And in a new tab
+alias gvt="gvim --remote-tab"
+
+# When using IPython, provide a pysh shortcut
+alias pysh="ipython -p sh"
+
+# Run a new shell "inside" ssh-agent, so I can use ssh-add
+alias ssh_shell=" exec ssh-agent bash"
+# but also see my .profile which uses keychain instead...
+
+# Ask bash not to remember duplicate commands in its history list
+export HISTCONTROL=ignoredups
+# ... and ignore same sucessive entries.
+export HISTCONTROL=ignoreboth
+
+# or, apparently, one can set things to ignore by:
+#export HISTIGNORE="&:ls:[bf]g:exit"
+# which would ignore duplicates, "ls" on a line by itself, and the "bg", "fg"
+# and "exit" commands.
+
+# Have we got virtualenvwrapper?
+# If so, use "workon" to find out what virtualenv's exist, and to choose one
+if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+  export WORKON_HOME=$HOME/env
+  export PROJECT_HOME=$HOME/sw
+  source /usr/local/bin/virtualenvwrapper.sh
+
+  # We may also want the following, to make pip aware of virtualenvwrapper
+  export PIP_VIRTUALENV_BASE=$WORKON_HOME
+  # and to allow use of pip to detect an active virtualenv without needing the
+  # -E switch
+  export PIP_RESPECT_VIRTUALENV=true
+fi
+
+# I can never remember the switches to diff I use for patch preparation
+# - this is as much a convenient memo as an actual command to use
+# Usage: patchdiff <old-dir> <new-dir>
+alias patchdiff="diff -NbBrua"
+# "b" means ignore whitespace changes
+# "B" means ignore blank lines
+# "a" means treat all files as text
+# "r" means recursive
+# "u" means use unified diff (3 lines of context)
+# "N" means treat new files as empty.
+# "patch" itself suggests "diff -Naur"
+
+# By default, ls appears to sort ignoring the "dot" in filenames. I find this
+# disconcerting. The "info" page on ls suggests that this may be due to the
+# locale in force (although LC_ALL does not appear to be set by default).
+# Regardless, setting the locale to C appears to make ls work the way I am
+# used to again - although what else does it affect?
+###export LC_ALL=C
+
+# Enable colour in listings at the terminal
+# HOSTTYPE appears to be defined on spot (which is FreeBSD), and not on
+# (for instance) sparkler, which is Linux
+if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
+then
+    alias ls='ls -G'
+else
+    alias ls='ls --color=auto'
+fi
+
+# ANSI color codes
+# NB: apparently bash wants us to wrap non-printing characters in \[ .. \],
+# otherwise linewrap goes wrong (i.e., the square brackets bash to ignore the
+# non-printing control characters when calculating the width of the prompt)
+RS="\[\e[0m\]"    # reset
+HC="\[\e[1m\]"    # hicolor/bold
+UL="\[\e[4m\]"    # underline
+INV="\[\e[7m\]"   # inverse background and foreground
+FBLK="\[\e[30m\]" # foreground black
+FRED="\[\e[31m\]" # foreground red
+FGRN="\[\e[32m\]" # foreground green
+FYEL="\[\e[33m\]" # foreground yellow
+FBLE="\[\e[34m\]" # foreground blue
+FMAG="\[\e[35m\]" # foreground magenta
+FCYN="\[\e[36m\]" # foreground cyan
+FWHT="\[\e[37m\]" # foreground white
+BBLK="\[\e[40m\]" # background black
+BRED="\[\e[41m\]" # background red
+BGRN="\[\e[42m\]" # background green
+BYEL="\[\e[43m\]" # background yellow
+BBLE="\[\e[44m\]" # background blue
+BMAG="\[\e[45m\]" # background magenta
+BCYN="\[\e[46m\]" # background cyan
+BWHT="\[\e[47m\]" # background white
+
+if [ "$PS1" ]
+then
+  # check the window size after each command and, if necessary,
+  # update the values of LINES and COLUMNS.
+  shopt -s checkwinsize
+
+  # make less more friendly for non-text input files, see lesspipe(1)
+  [ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
+
+  # enable programmable completion features (you don't need to enable
+  # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+  # sources /etc/bash.bashrc).
+  if [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+
+  # Older versions of git require me to make my own copy of the
+  # completion setup script - here it is
+  if [ -f ${HOME}/bin/bash_completion_git.sh ]; then
+    source ${HOME}/bin/bash_completion_git.sh
+  fi
+
+  # Sort out our prompt. Based in part on /etc/vxprofile
+  # If we're in a chroot, its name *may* be specified in /etc/debian_chroot
+  # which is reflected in this variable. If so, we'll put (<chroot-name>)
+  # at the start of the prompt
+  CHROOT_NAME=${debian_chroot:+($debian_chroot)}
+
+  got_UBT="no"
+  if [ -z "$TAG" ]; then
+    if [ -n "$UBE_NAME" ]; then
+      got_UBE="yes"
+      TAG="UBE:$UBE_NAME"
+    fi
+  fi
+
+  # Prompt starts: <user>@<short-hostname>
+  # Prompt ends: <last component of current directory path>$<space> (or
+  # #<space> if root)
+  PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W\$ "
+  if [ "$TAG" != "" ] ; then
+    #PS1=${PS1_START}'[$TAG]:'${PS1_END}
+    if [ "$got_UBE" == "yes" ]; then
+      # It appears that using colours confuses the UBE, such that
+      # the prompt doesn't get its width right. I can't believe it's
+      # the oldness of the bash thereon (surely not), but for the moment
+      # the easiest thing to do is just not to use non-printing characters
+      PS1="${CHROOT_NAME}\u@\h[${TAG}]:\W\$ "
+    else
+      PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}[${TAG}]:\W\$ "
+    fi
+    case $TERM in
+      xterm* | Eterm | linux | screen* | rxvt )
+       # Set the window title
+       # On my Mac I have:
+       # PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}\007"'
+       # but this is closer to the FVX "standard"
+       PROMPT_COMMAND='echo -ne "\033]0;[${PWD/#$HOME/~}] ${USER}@${HOSTNAME%%.*}[${TAG}]\007"'
+     ;;
+    esac
+  fi
+fi
+
+# vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:
