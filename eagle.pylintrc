@@ -1,0 +1,220 @@
+# Velocix standard pylint RC
+#
+# Use this with pylint 1.2.1 or newer
+#
+# On Unix and Mac, install as ~/.pylintrc
+#
+# This file only specifies things which differ from the defaults.
+# To generate a "complete" RC file, showing the defaults as well, you can do:
+#
+#	pylint --rcfile=<filename> --generate-rcfile > <output-file>
+#
+# where <filename> is the RC file. If this file is already ~/.pylintrc, then
+# you can shorten that to:
+#
+#	pylint --generate-rcfile > <output-file>
+#
+# If pylint complains about something - for instance:
+#
+#	"C:  1: Missing docstring (missing-docstring)"
+#
+# then you can find out more about the problem by asking for help on the
+# particular message. So in this instance:
+#
+#	$ pylint --help-msg=missing-docstring
+#	No config file found, using default configuration
+#	:missing-docstring (C0111): *Missing docstring*
+#	  Used when a module, function, class or method has no docstring. Some special
+#	  methods like __init__ doesn't necessary require a docstring. This message
+#	  belongs to the basic checker.
+
+[MASTER]
+
+# Add files or directories to the blacklist. They should be base names, not
+# paths.
+# Velocix: We might conceivably be using git or mercurial
+ignore=.git,.hg
+
+
+[MESSAGES CONTROL]
+
+# Messages are enabled/disabled with the enable=a,b,c and disable=d,e,f
+# instrucions. These follow the normal INI file conventions.
+#
+# At the command line, you can do the same (--enable=a,b,c), or use multiple
+# switches (--enable=a, --enable=b, --enable=c). You can also use --enable=all
+# or --disable=all, followed by exceptions.
+#
+# Rationale for the checks we disable below:
+#
+# * bad-whitespace: the whitespace checking within a line is too picky. It
+#   will forbid::
+#
+#       fred = 120
+#       bob  =  12
+#
+#   saying that there should be exactly one space either side of the '=' (this
+#   is a PEP 8 thing, as Guido doesn't like lining things up in this way). It
+#   will also forbid::
+#
+#      a,b,c,d = thing
+#      fn(a,b,d,c)
+#
+#   because it insists on a space after each comma. Whilst this is a good idea,
+#   sometimes compact layout is more obvious.
+#
+# * broad-except: this would forbid catching Exception, which is quite often
+#   a reasonable thing to do.
+#
+# * star-args: This gives a warning when a function or method is called using
+#   '*args' or '**kwargs' to dispatch arguments. This is really a perfectly
+#   respectable thing to do...
+
+disable=bad-whitespace,
+	broad-except,
+	star-args
+
+
+[REPORTS]
+
+# Tells whether to display a full report or only the messages
+# Velocix: only display the messages (switch reports back on with -ry or
+# --reports=yes)
+reports=no
+
+
+[BASIC]
+
+# List of builtin function names that should not be used, separated by a comma
+# Velocix: we keep the default, but annotate it:
+# - map, filter and apply can be replaced by (list) comprehensions, and many
+#   people find the "functional" approach confusing
+# - input is unsafe, and should not be used (use raw_input)
+# - use of open is always preferred to use of file
+# Reiterating the default here means we won't change it automatically if new
+# versions of pylint add functions to the list, but that's probably a good
+# thing, as we'd want to review any additions.
+bad-functions=map,filter,apply,input,file
+
+# Good variable names which should always be accepted, separated by a comma
+# Velocix: we replace ex with e, and remove Run and _
+good-names=i,j,k,e
+
+# Bad variable names which should always be refused, separated by a comma
+# Velocix: we remove the t.t. names (they must be odd Americanisms, I suppose)
+bad-names=foo,bar,baz
+
+# Include a hint for the correct naming format with invalid-name
+# Velocix: no is the default, but yes can be very useful, so we're including
+# this here to make it easier to remember
+include-naming-hint=no
+
+# Regular expression matching correct variable names
+# Velocix: we don't put limits on the length of variables names
+# (question - should we still have an upper limit of 30?)
+variable-rgx=[a-z_][a-z0-9_]*$
+variable-name-hint=[a-z_][a-z0-9_]*$
+
+# Regular expression matching correct constant names
+# Velocix: pylint regards any variable declared at the module level (the
+# top-level) as a constant, and then follows PEP 8 in wanting them all in
+# uppercase. We are happy to have things we do not regard as constants at that
+# level, and also "ambiguous" things like:
+#
+#    logger = logging.GetLogger(__main__)
+#
+# The simplest way around this is to be more flexible on what constants
+# can look like ("constant" is a misnomer anyway, as Python doesn't have a
+# mechanism for annotating values as constant). So we'll allow lower case
+# as well (note that, unlike other names, we allow any sequence of upper
+# and lower case alphanumerics).
+#
+# (Remember that the __.*__ is to allow things like __VERSION__, which have
+# a long history in Python code)
+#
+const-rgx=(([a-zA-Z_][a-zA-Z0-9_]*)|(__.*__))$
+const-name-hint=(([a-zA-Z_][a-zA-Z0-9_]*)|(__.*__))$
+#
+# We could have just put in an exception for 'logger'...
+#const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__)|(logger))$
+#const-name-hint=(([A-Z_][A-Z0-9_]*)|(__.*__)|(logger))$
+#
+# but this was regarded as perhaps too restrictive
+
+# Regular expression matching correct attribute names
+# Velocix: as for variable names
+attr-rgx=[a-z_][a-z0-9_]*$
+attr-name-hint=[a-z_][a-z0-9_]*$
+
+# Regular expression matching correct argument names
+# Velocix: as for variable names
+argument-rgx=[a-z_][a-z0-9_]*$
+argument-name-hint=[a-z_][a-z0-9_]*$
+
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+# Velocix: Some of us think this should be 80 (the default), and some don't
+# This seems to be a sensible compromise between long lines and not checking
+# at all.
+max-line-length=120
+
+# String used as indentation unit. This is usually "    " (4 spaces) or
+# "\t" (1 tab).
+# Velocix: We're going for the default, 4 spaces, but being explicit anyway
+indent-string='    '
+
+
+[MISCELLANEOUS]
+
+# List of note tags to take in consideration, separated by a comma.
+# Velocix: Add @todo (for doxygen) to the list
+notes=FIXME,XXX,TODO,@todo
+
+
+#[SIMILARITIES] -- no changes
+
+
+#[TYPECHECK] -- no changes
+
+
+[VARIABLES]
+
+# A regular expression matching the beginning of the name of dummy variables
+# (i.e. not used).
+# Velocix: we have dummy and unused rather than dummy and _
+dummy-variables-rgx=dummy|unused
+
+
+# [CLASSES] -- no changes
+
+
+[DESIGN]
+
+# Maximum number of arguments for function / method
+# Velocix: 20 instead of 5
+max-args=7
+
+# Maximum number of statements in function / method body
+# Velocix: 60 instead of 50
+max-statements=60
+
+# Minimum number of public methods for a class (see R0903).
+# Velocix: 0 instead of 2
+# Unfortunately, __init__ doesn't count as a public method.
+# So if we want to allow classes that (a) are just "value holders" (the
+# equivalent of a C struct), or classes that are sufficient once their
+# initialisation has occurred, we need to allow 0 public methods.
+min-public-methods=0
+
+
+[IMPORTS]
+
+# Deprecated modules which should not be used, separated by a comma
+# Velocix: we add popen2 (use subprocess)
+deprecated-modules=regsub,TERMIOS,Bastion,rexec,popen2
+
+
+# [EXCEPTIONS] -- no changes
+
