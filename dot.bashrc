@@ -96,7 +96,15 @@ if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
   # and to allow use of pip to detect an active virtualenv without needing the
   # -E switch
   export PIP_RESPECT_VIRTUALENV=true
+else
+  export PIP_VIRTUALENV_BASE=$HOME/env
 fi
+
+# The following may also be sensible for virtualenv use:
+# virtualenv should use Distribute instead of legacy setuptools
+export VIRTUALENV_DISTRIBUTE=true
+# pip should only run if there is a virtualenv currently activated
+export PIP_REQUIRE_VIRTUALENV=true
 
 # I can never remember the switches to diff I use for patch preparation
 # - this is as much a convenient memo as an actual command to use
