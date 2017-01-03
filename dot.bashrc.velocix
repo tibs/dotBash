@@ -6,6 +6,7 @@
 COMPUTER_NAME=`hostname -s`
 
 alias blade='ssh -Y bladefvx-tibbs.eng.velocix.com'
+alias blackduck='ssh -Y usilblackduck.ndc.lucent.com'
 
 # The 'mvim' script defaults to looking for MacVim in /Applications,
 # but I keep it in /Applications/Extras
@@ -24,8 +25,10 @@ export PYTHONPATH=${HOME}/Python:${PYTHONPATH}
 # Enabling bash completion needs extra work, as it doesn't appear to come
 # with the standard system.
 # Use the version of git installed from a package:
-source /usr/local/git/contrib/completion/git-completion.bash
-source /usr/local/git/contrib/completion/git-prompt.sh
+if [ -d /usr/local/git/contrib/completion ]; then
+  source /usr/local/git/contrib/completion/git-completion.bash
+  source /usr/local/git/contrib/completion/git-prompt.sh
+fi
 # Check if I've installed it with homebrew...
 #if [ -f $(brew --prefix)/etc/bash_completion ]; then
 #  . $(brew --prefix)/etc/bash_completion
@@ -69,8 +72,6 @@ alias gitlog="git --no-pager log --oneline --graph --all --decorate"
 
 # Ask bash not to remember duplicate commands in its history list
 export HISTCONTROL=ignoredups
-# ... and ignore same sucessive entries.
-export HISTCONTROL=ignoreboth
 
 # or, apparently, one can set things to ignore by:
 #export HISTIGNORE="&:ls:[bf]g:exit"
@@ -118,6 +119,9 @@ then
     alias ls='ls -G'
 else
     alias ls='ls --color=auto'
+    # Try for colours that work better on a light background
+    LS_COLORS='di=1:fi=0:ln=31:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
+    export LS_COLORS
     ##if [ "$COMPUTER_NAME" == "sparkler" ]
     ##then
     ##  # And set the colours I want - this tries to avoid the yellow-on-white
