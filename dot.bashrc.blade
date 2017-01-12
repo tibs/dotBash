@@ -3,16 +3,19 @@
 # This is the bashrc on my blade. It is not yet factored into the github
 # dotBash mechanism.
 
-# Remember to look at /etc/vxprofile as well
-
 # Blade setup
 export P4CLIENT=$(whoami)
 export EDITOR=/usr/bin/vim
+
+export P4IGNORE=${HOME}/.p4ignore
 
 # Tell Perforce to use meld as a difference tool
 export P4MERGE=${HOME}/bin/p4mergemerge
 
 export PATH=${HOME}/cachelogic/utils:${PATH}
+
+# Use our local Python pip/virtualenv/tox
+export PATH=${HOME}/.local/bin:${PATH}
 
 # For VTF tests and django
 export PYTHONPATH=$PYTHONPATH:/home/$(whoami)/cachelogic/vxtest/framework/manager/
@@ -33,8 +36,19 @@ alias gv="gvim --remote-silent"
 # And in a new tab
 alias gvt="gvim --remote-tab"
 
+# Stop vim from trying to connect to an X server(!)
+if [ -x ${HOME}/local/bin/vim ]
+then
+    alias vim='${HOME}/local/bin/vim -X'
+else
+    alias vim='/usr/bin/vim -X'
+fi
+
 # When using IPython, provide a pysh shortcut
 alias pysh="ipython -p sh"
+
+# Run a "standardised" Jupyter notebook session
+alias jup="jupyter notebook --notebook-dir=${HOME}/www/jupyter-notebooks --no-browser --ip=0.0.0.0"
 
 # Run a new shell "inside" ssh-agent, so I can use ssh-add
 alias ssh_shell=" exec ssh-agent bash"
@@ -91,6 +105,9 @@ then
     alias ls='ls -G'
 else
     alias ls='ls --color=auto'
+    # Try for colours that work better on a light background
+    LS_COLORS='di=1:fi=0:ln=31:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
+    export LS_COLOURS
 fi
 
 # ANSI color codes
@@ -180,5 +197,8 @@ then
     esac
   fi
 fi
+
+export NVM_DIR="/home/tibbs/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:
