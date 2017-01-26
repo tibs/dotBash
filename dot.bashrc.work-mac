@@ -3,7 +3,15 @@
 # Setup for my work Mac, pending integration into the github setup
 
 # Which computer am I on? (e.g., spoon, ghlenlivid, etc.)
-COMPUTER_NAME=`hostname -s`
+if [ "$(uname)" == "Darwin" ]
+then
+  # On the Mac "hostname" can give whatever name was assigned by reverse lookup
+  # which can be unhelpful. So instead we do:
+  COMPUTER_NAME=$(scutil --get ComputerName)
+else
+  # On Linux it's sensible to do:
+  COMPUTER_NAME=$(hostname -s)
+fi
 
 # Path with homebrew and local Python stuff (pip)
 # - I want my local pip and virtualenv first, and then homebrew
@@ -164,8 +172,9 @@ then
   # make less more friendly for non-text input files, see lesspipe(1)
   [ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
 
-  # Emphasise the hostname in bold red
-  PROMPT_START="\u@${FRED}\h${RS} \W"
+  # Emphasise the hostname in bold red. Use the COMPUTER_NAME rather than \h,
+  # since \g uses "hostname" to calculate its value
+  PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
   PROMPT_END="\$ "
   #export PS1=${PROMPT_START}${PROMPT_END}
 
