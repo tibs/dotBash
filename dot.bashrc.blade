@@ -54,6 +54,30 @@ alias jup="jupyter notebook --notebook-dir=${HOME}/www/jupyter-notebooks --no-br
 alias ssh_shell=" exec ssh-agent bash"
 # but also see my .profile which uses keychain instead...
 
+# Or there is the following, from http://mah.everybody.org/docs/ssh
+SSH_ENV="$HOME/.ssh/environment"
+
+function start_agent {
+     echo "Initialising new SSH agent..."
+     /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+     echo succeeded
+     chmod 600 "${SSH_ENV}"
+     . "${SSH_ENV}" > /dev/null
+     /usr/bin/ssh-add;
+}
+
+# Source SSH settings, if applicable
+
+if [ -f "${SSH_ENV}" ]; then
+     . "${SSH_ENV}" > /dev/null
+     #ps ${SSH_AGENT_PID} doesn't work under cywgin
+     ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+         start_agent;
+     }
+else
+     start_agent;
+fi
+
 # Ask bash not to remember duplicate commands in its history list
 export HISTCONTROL=ignoredups
 # ... and ignore same sucessive entries.
@@ -100,14 +124,27 @@ alias patchdiff="diff -NbBrua"
 # Enable colour in listings at the terminal
 # HOSTTYPE appears to be defined on spot (which is FreeBSD), and not on
 # (for instance) sparkler, which is Linux
+
+# di = directory
+# fi = file
+# ln = symbolic link
+# pi = fifo file
+# so = socket file
+# bd = block (buffered) special file
+# cd = character (unbuffered) special file
+# or = symbolic link pointing to a non-existent file (orphan)
+# mi = non-existent file pointed to by a symbolic link (visible when you type ls -l)
+# ex = file which is executable (ie. has 'x' set in permissions).
+
 if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
 then
     alias ls='ls -G'
 else
     alias ls='ls --color=auto'
     # Try for colours that work better on a light background
-    LS_COLORS='di=1:fi=0:ln=31:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
-    export LS_COLOURS
+    ###LS_COLORS='di=1:fi=0:ln=32:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
+    # 32 is green
+    export LS_COLORS="${LS_COLORS}:ln=32"
 fi
 
 # ANSI color codes
@@ -134,6 +171,19 @@ BBLE="\[\e[44m\]" # background blue
 BMAG="\[\e[45m\]" # background magenta
 BCYN="\[\e[46m\]" # background cyan
 BWHT="\[\e[47m\]" # background white
+
+# determine if we're in an el7 or cl1 working directory
+function platform_name() {
+  if [[ $PWD == /home/tibbs/work/el7* ]]
+  then
+    echo "el7:"
+  elif [[ $PWD == /home/tibbs/work/cl1* ]]
+  then
+    echo "cl1:"
+  else
+    echo ""
+  fi
+}
 
 # get current branch in git repo
 function parse_git_branch() {
@@ -210,36 +260,34 @@ then
   # at the start of the prompt
   CHROOT_NAME=${debian_chroot:+($debian_chroot)}
 
-  got_UBT="no"
-  if [ -z "$TAG" ]; then
-    if [ -n "$UBE_NAME" ]; then
-      got_UBE="yes"
-      TAG="UBE:$UBE_NAME"
-    fi
-  fi
+  #got_UBE="no"
+  #if [ -z "$TAG" ]; then
+  #  if [ -n "$UBE_NAME" ]; then
+  #    got_UBE="yes"
+  #    TAG="UBE:$UBE_NAME"
+  #  fi
+  #fi
 
   # Prompt starts:
   #     <user>@<short-hostname>
   #     <last component of current directory path>
-  PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W\$ "
+  ###PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W\$ "
   # Emphasise the hostname in bold red
-  PROMPT_START="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W"
-  PROMPT_END="\$ "
-  export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+  export PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:${FRED}\`platform_name\`${RS}\W${FRED}${RS}${FGRN}\`parse_git_branch\`${RS}\$ "
 
-  if [ "$TAG" != "" ] ; then
-    #PS1=${PS1_START}'[$TAG]:'${PS1_END}
-    if [ "$got_UBE" == "yes" ]; then
-      # It appears that using colours confuses the UBE, such that
-      # the prompt doesn't get its width right. I can't believe it's
-      # the oldness of the bash thereon (surely not), but for the moment
-      # the easiest thing to do is just not to use non-printing characters
-      # Also, in the UBE we don't care about git
-      PS1="${CHROOT_NAME}\u@\h[${TAG}]:\W\$ "
-    else
-      #PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}[${TAG}]:\W\$ "
-      export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
-    fi
+  #if [ "$TAG" != "" ] ; then
+  #  #PS1=${PS1_START}'[$TAG]:'${PS1_END}
+  #  if [ "$got_UBE" == "yes" ]; then
+  #    # It appears that using colours confuses the UBE, such that
+  #    # the prompt doesn't get its width right. I can't believe it's
+  #    # the oldness of the bash thereon (surely not), but for the moment
+  #    # the easiest thing to do is just not to use non-printing characters
+  #    # Also, in the UBE we don't care about git
+  #    PS1="${CHROOT_NAME}\u@\h[${TAG}]:\W\$ "
+  #  else
+  #    #PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}[${TAG}]:\W\$ "
+  #    export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+  #  fi
     case $TERM in
       xterm* | Eterm | linux | screen* | rxvt )
        # Set the window title
@@ -249,7 +297,7 @@ then
        PROMPT_COMMAND='echo -ne "\033]0;[${PWD/#$HOME/~}] ${USER}@${HOSTNAME%%.*}[${TAG}]\007"'
      ;;
     esac
-  fi
+#  fi
 fi
 
 export NVM_DIR="/home/tibbs/.nvm"
