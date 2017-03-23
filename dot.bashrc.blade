@@ -172,12 +172,14 @@ BMAG="\[\e[45m\]" # background magenta
 BCYN="\[\e[46m\]" # background cyan
 BWHT="\[\e[47m\]" # background white
 
-# determine if we're in an el7 or cl1 working directory
+# Determine if we're in an el7 or cl1 working directory
+# It appears I need to cope with both forms of PWD because I have
+# /home/tibbs/work -> /space/home/tibbs/work
 function platform_name() {
-  if [[ $PWD == /home/tibbs/work/el7* ]]
+  if [[ $PWD == /home/tibbs/work/el7* || $PWD == /space/home/tibbs/work/el7* ]]
   then
     echo "el7:"
-  elif [[ $PWD == /home/tibbs/work/cl1* ]]
+  elif [[ $PWD == /home/tibbs/work/cl1* || $PWD == /space/home/tibbs/work/cl1* ]]
   then
     echo "cl1:"
   else
