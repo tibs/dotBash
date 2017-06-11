@@ -3,16 +3,19 @@
 # This is the bashrc on my blade. It is not yet factored into the github
 # dotBash mechanism.
 
-# Remember to look at /etc/vxprofile as well
-
 # Blade setup
 export P4CLIENT=$(whoami)
 export EDITOR=/usr/bin/vim
+
+export P4IGNORE=${HOME}/.p4ignore
 
 # Tell Perforce to use meld as a difference tool
 export P4MERGE=${HOME}/bin/p4mergemerge
 
 export PATH=${HOME}/cachelogic/utils:${PATH}
+
+# Use our local Python pip/virtualenv/tox
+export PATH=${HOME}/.local/bin:${PATH}
 
 # For VTF tests and django
 export PYTHONPATH=$PYTHONPATH:/home/$(whoami)/cachelogic/vxtest/framework/manager/
@@ -33,12 +36,47 @@ alias gv="gvim --remote-silent"
 # And in a new tab
 alias gvt="gvim --remote-tab"
 
+# Stop vim from trying to connect to an X server(!)
+if [ -x ${HOME}/local/bin/vim ]
+then
+    alias vim='${HOME}/local/bin/vim -X'
+else
+    alias vim='/usr/bin/vim -X'
+fi
+
 # When using IPython, provide a pysh shortcut
 alias pysh="ipython -p sh"
+
+# Run a "standardised" Jupyter notebook session
+alias jup="jupyter notebook --notebook-dir=${HOME}/www/jupyter-notebooks --no-browser --ip=0.0.0.0"
 
 # Run a new shell "inside" ssh-agent, so I can use ssh-add
 alias ssh_shell=" exec ssh-agent bash"
 # but also see my .profile which uses keychain instead...
+
+# Or there is the following, from http://mah.everybody.org/docs/ssh
+SSH_ENV="$HOME/.ssh/environment"
+
+function start_agent {
+     echo "Initialising new SSH agent..."
+     /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+     echo succeeded
+     chmod 600 "${SSH_ENV}"
+     . "${SSH_ENV}" > /dev/null
+     /usr/bin/ssh-add;
+}
+
+# Source SSH settings, if applicable
+
+if [ -f "${SSH_ENV}" ]; then
+     . "${SSH_ENV}" > /dev/null
+     #ps ${SSH_AGENT_PID} doesn't work under cywgin
+     ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+         start_agent;
+     }
+else
+     start_agent;
+fi
 
 # Ask bash not to remember duplicate commands in its history list
 export HISTCONTROL=ignoredups
@@ -86,11 +124,27 @@ alias patchdiff="diff -NbBrua"
 # Enable colour in listings at the terminal
 # HOSTTYPE appears to be defined on spot (which is FreeBSD), and not on
 # (for instance) sparkler, which is Linux
+
+# di = directory
+# fi = file
+# ln = symbolic link
+# pi = fifo file
+# so = socket file
+# bd = block (buffered) special file
+# cd = character (unbuffered) special file
+# or = symbolic link pointing to a non-existent file (orphan)
+# mi = non-existent file pointed to by a symbolic link (visible when you type ls -l)
+# ex = file which is executable (ie. has 'x' set in permissions).
+
 if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
 then
     alias ls='ls -G'
 else
     alias ls='ls --color=auto'
+    # Try for colours that work better on a light background
+    ###LS_COLORS='di=1:fi=0:ln=32:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
+    # 32 is green
+    export LS_COLORS="${LS_COLORS}:ln=32"
 fi
 
 # ANSI color codes
@@ -117,6 +171,68 @@ BBLE="\[\e[44m\]" # background blue
 BMAG="\[\e[45m\]" # background magenta
 BCYN="\[\e[46m\]" # background cyan
 BWHT="\[\e[47m\]" # background white
+
+# Determine if we're in an el7 or cl1 working directory
+# It appears I need to cope with both forms of PWD because I have
+# /home/tibbs/work -> /space/home/tibbs/work
+function platform_name() {
+  if [[ $PWD == /home/tibbs/work/el7* || $PWD == /space/home/tibbs/work/el7* ]]
+  then
+    echo "el7:"
+  elif [[ $PWD == /home/tibbs/work/cl1* || $PWD == /space/home/tibbs/work/cl1* ]]
+  then
+    echo "cl1:"
+  else
+    echo ""
+  fi
+}
+
+# get current branch in git repo
+function parse_git_branch() {
+  BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+  if [ ! "${BRANCH}" == "" ]
+  then
+    STAT=`parse_git_dirty`
+    echo " (${BRANCH}${STAT})"
+  else
+    echo ""
+  fi
+}
+
+# get current status of git repo
+function parse_git_dirty {
+  status=`git status 2>&1 | tee`
+  dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+  untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+  ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+  newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+  renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+  deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+  bits=''
+  if [ "${renamed}" == "0" ]; then
+          bits=">${bits}"
+  fi
+  if [ "${ahead}" == "0" ]; then
+          bits="*${bits}"
+  fi
+  if [ "${newfile}" == "0" ]; then
+          bits="+${bits}"
+  fi
+  if [ "${untracked}" == "0" ]; then
+          bits="?${bits}"
+  fi
+  if [ "${deleted}" == "0" ]; then
+          bits="x${bits}"
+  fi
+  if [ "${dirty}" == "0" ]; then
+          bits="!${bits}"
+  fi
+  if [ ! "${bits}" == "" ]; then
+          echo " ${bits}"
+  else
+          echo ""
+  fi
+}
 
 if [ "$PS1" ]
 then
@@ -146,29 +262,34 @@ then
   # at the start of the prompt
   CHROOT_NAME=${debian_chroot:+($debian_chroot)}
 
-  got_UBT="no"
-  if [ -z "$TAG" ]; then
-    if [ -n "$UBE_NAME" ]; then
-      got_UBE="yes"
-      TAG="UBE:$UBE_NAME"
-    fi
-  fi
+  #got_UBE="no"
+  #if [ -z "$TAG" ]; then
+  #  if [ -n "$UBE_NAME" ]; then
+  #    got_UBE="yes"
+  #    TAG="UBE:$UBE_NAME"
+  #  fi
+  #fi
 
-  # Prompt starts: <user>@<short-hostname>
-  # Prompt ends: <last component of current directory path>$<space> (or
-  # #<space> if root)
-  PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W\$ "
-  if [ "$TAG" != "" ] ; then
-    #PS1=${PS1_START}'[$TAG]:'${PS1_END}
-    if [ "$got_UBE" == "yes" ]; then
-      # It appears that using colours confuses the UBE, such that
-      # the prompt doesn't get its width right. I can't believe it's
-      # the oldness of the bash thereon (surely not), but for the moment
-      # the easiest thing to do is just not to use non-printing characters
-      PS1="${CHROOT_NAME}\u@\h[${TAG}]:\W\$ "
-    else
-      PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}[${TAG}]:\W\$ "
-    fi
+  # Prompt starts:
+  #     <user>@<short-hostname>
+  #     <last component of current directory path>
+  ###PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:\W\$ "
+  # Emphasise the hostname in bold red
+  export PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}:${FRED}\`platform_name\`${RS}\W${FRED}${RS}${FGRN}\`parse_git_branch\`${RS}\$ "
+
+  #if [ "$TAG" != "" ] ; then
+  #  #PS1=${PS1_START}'[$TAG]:'${PS1_END}
+  #  if [ "$got_UBE" == "yes" ]; then
+  #    # It appears that using colours confuses the UBE, such that
+  #    # the prompt doesn't get its width right. I can't believe it's
+  #    # the oldness of the bash thereon (surely not), but for the moment
+  #    # the easiest thing to do is just not to use non-printing characters
+  #    # Also, in the UBE we don't care about git
+  #    PS1="${CHROOT_NAME}\u@\h[${TAG}]:\W\$ "
+  #  else
+  #    #PS1="${CHROOT_NAME}\u@${FBLE}\h${RS}[${TAG}]:\W\$ "
+  #    export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+  #  fi
     case $TERM in
       xterm* | Eterm | linux | screen* | rxvt )
        # Set the window title
@@ -178,7 +299,10 @@ then
        PROMPT_COMMAND='echo -ne "\033]0;[${PWD/#$HOME/~}] ${USER}@${HOSTNAME%%.*}[${TAG}]\007"'
      ;;
     esac
-  fi
+#  fi
 fi
+
+export NVM_DIR="/home/tibbs/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:

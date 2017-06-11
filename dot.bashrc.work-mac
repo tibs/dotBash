@@ -1,9 +1,21 @@
 # .bashrc
 #
-# Setup for my work Mac, pending integtation into the github setup
+# Setup for my work Mac, pending integration into the github setup
 
 # Which computer am I on? (e.g., spoon, ghlenlivid, etc.)
-COMPUTER_NAME=`hostname -s`
+if [ "$(uname)" == "Darwin" ]
+then
+  # On the Mac "hostname" can give whatever name was assigned by reverse lookup
+  # which can be unhelpful. So instead we do:
+  COMPUTER_NAME=$(scutil --get ComputerName)
+else
+  # On Linux it's sensible to do:
+  COMPUTER_NAME=$(hostname -s)
+fi
+
+# Path with homebrew and local Python stuff (pip)
+# - I want my local pip and virtualenv first, and then homebrew
+export PATH=${HOME}/Library/Python/2.7/bin:/usr/local/bin:${PATH}
 
 alias blade='ssh -Y bladefvx-tibbs.eng.velocix.com'
 alias blackduck='ssh -Y usilblackduck.ndc.lucent.com'
@@ -14,35 +26,19 @@ export VIM_APP_DIR=/Applications/Extras
 # Use the console ("restricted") version of MacVim as our editor
 export EDITOR=rMacVim
 
+# Alternatively, put the following into (for instance) ~/.p4comfig, and point
+# P$CONFIG at it (so many ways to skin a cat)
+export P4CLIENT=mac-tibbs
+export P4PORT=perforce.eng.velocix.com:1666
+export P4USER=tibbs
+
 # Make the various things in the Python binary directory (maybe including scons)
 # available
 #export PATH=${PATH}:/System/Library/Frameworks/Python.framework/Versions/Current/bin/
 
-# Some extra Python scripts/modules
-export PATH=$PATH:${HOME}/Python
-export PYTHONPATH=${HOME}/Python:${PYTHONPATH}
+# Cachelogic utils
+export PATH=$PATH:${HOME}/cachelogic/utils
 
-# Enabling bash completion needs extra work, as it doesn't appear to come
-# with the standard system.
-# Use the version of git installed from a package:
-if [ -d /usr/local/git/contrib/completion ]; then
-  source /usr/local/git/contrib/completion/git-completion.bash
-  source /usr/local/git/contrib/completion/git-prompt.sh
-fi
-# Check if I've installed it with homebrew...
-#if [ -f $(brew --prefix)/etc/bash_completion ]; then
-#  . $(brew --prefix)/etc/bash_completion
-#fi
-#
-# And similarly with git bash completion
-#if [ -f $(brew --prefix)/etc/bash_completion.d/git-completion.bash ]; then
-#  . $(brew --prefix)/etc/bash_completion.d/git-completion.bash
-#fi
-#
-# and prompting
-#if [ -f $(brew --prefix)/etc/bash_completion.d/git-prompt.sh ]; then
-#  . $(brew --prefix)/etc/bash_completion.d/git-prompt.sh
-#fi
 
 export EDITOR=/usr/bin/vim
 
@@ -176,15 +172,70 @@ then
   # make less more friendly for non-text input files, see lesspipe(1)
   [ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
 
-  # Emphasise the hostname ("\h") in red
-  PS1="[\u@${FRED}\h${RS} \W]\$ "
-  #if [ -x /usr/bin/git ]
-  #then
-  #  # If we're within a git repository, put the branch in light green
-  #  # in the middle of the prompt. See above about \[ .. \]
-  #  PS1="[\u${FRED}\h\${RS}'$(__git_ps1 " ${FGRN}%s${RS}")']\$"
-  #  PS1=${PROMPT_START}'$(__git_ps1 " \[\e[1;32m\]%s\[\e[m\]")'${PROMPT_END}
-  #fi
+  # Emphasise the hostname in bold red. Use the COMPUTER_NAME rather than \h,
+  # since \g uses "hostname" to calculate its value
+  PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
+  PROMPT_END="\$ "
+  #export PS1=${PROMPT_START}${PROMPT_END}
+
+  # get current branch in git repo
+  function parse_git_branch() {
+    BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+    if [ ! "${BRANCH}" == "" ]
+    then
+      STAT=`parse_git_dirty`
+      echo " (${BRANCH}${STAT})"
+    else
+      echo ""
+    fi
+  }
+
+  # get current status of git repo
+  function parse_git_dirty {
+    status=`git status 2>&1 | tee`
+    dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+    untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+    ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+    newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+    renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+    deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+    bits=''
+    if [ "${renamed}" == "0" ]; then
+            bits=">${bits}"
+    fi
+    if [ "${ahead}" == "0" ]; then
+            bits="*${bits}"
+    fi
+    if [ "${newfile}" == "0" ]; then
+            bits="+${bits}"
+    fi
+    if [ "${untracked}" == "0" ]; then
+            bits="?${bits}"
+    fi
+    if [ "${deleted}" == "0" ]; then
+            bits="x${bits}"
+    fi
+    if [ "${dirty}" == "0" ]; then
+            bits="!${bits}"
+    fi
+    if [ ! "${bits}" == "" ]; then
+            echo " ${bits}"
+    else
+            echo ""
+    fi
+  }
+
+  export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+
+  # If we've installed git with homebrew, then we get completion this way
+  if [ -e /usr/local/etc/bash_completion.d/git-completion.bash ]
+  then
+    source /usr/local/etc/bash_completion.d/git-completion.bash
+  fi
+  if [ -e /usr/local/etc/bash_completion.d/git-prompt.sh ]
+  then
+    source /usr/local/etc/bash_completion.d/git-prompt.sh
+  fi
 
   case $TERM in
     xterm* | Eterm | screen* | rxvt )
@@ -200,5 +251,8 @@ then
     . /etc/bash_completion
   fi
 fi
+
+export NVM_DIR="/Users/tibbs/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:
