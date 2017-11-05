@@ -3,8 +3,16 @@
 # Which computer am I on? (e.g., spoon, ghlenlivid, etc.)
 COMPUTER_NAME=`hostname -s`
 
-MAIN_WORK_MACHINE="kimota"
-MAIN_HOME_MACHINE="frosch"
+if [ "${COMPUTER_NAME}" == "Digger" ]
+then
+  COMPUTER_NAME="digger"
+fi
+
+MAIN_WORK_MACHINE="fred"
+MAIN_HOME_MACHINE="digger"
+
+# Defaults, which may get set by the "local" scripts
+CURRENT_GIT_HOME=/usr
 
 # Stuff that is not suitable for putting on github
 if [ -e ${HOME}/.bashrc_local ]
@@ -56,6 +64,10 @@ alias todo="${HOME}/sw/todo.txt_cli/todo.sh"
 
 # when
 alias when="${HOME}/sw/when/when"
+
+# and what...
+alias what="${HOME}/Dropbox/what.py"
+alias report_hours="${HOME}/Dropbox/hours/report_hours.py"
 
 # Opening a file in an existing Vim
 alias gv="gvim --remote-silent"
@@ -172,7 +184,7 @@ then
   PROMPT_START="[\u@${HOSTNAME_PROMPT} \W"
   PROMPT_END="]\$ "
 
-  if [ -x /usr/bin/git ]
+  if [ -x ${CURRENT_GIT_HOME}/bin/git ]
   then
     # If we're within a git repository, put the branch in light green
     # in the middle of the prompt. See above about \[ .. \]
