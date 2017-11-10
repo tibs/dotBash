@@ -8,6 +8,9 @@
 # - the normal PATH
 export PATH=/usr/local/bin:${HOME}/bin:${PATH}
 
+# Add TeX stuff
+export PATH=${PATH}:/usr/local/texlive/2017basic/bin/x86_64-darwin/
+
 export EDITOR=/usr/bin/vim
 
 # Ask bash not to remember duplicate commands in its history list
@@ -87,7 +90,9 @@ then
 
   # Emphasise the hostname in bold red. Use the COMPUTER_NAME rather than \h,
   # since \g uses "hostname" to calculate its value
-  PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
+  # PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
+  # Or just the user name in red, followed by the current directory
+  PROMPT_START="${FRED}\u${RS} \W"
   PROMPT_END="\$ "
   #export PS1=${PROMPT_START}${PROMPT_END}
 
@@ -138,7 +143,17 @@ then
     fi
   }
 
-  export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+  # Thanks to Graham for the exit smiley idea
+  exit_smiley() {
+      local EXIT="$?"
+      if [ ${EXIT} != 0 ]; then
+          echo ' 😡 '
+      else
+          echo ' 😃 '
+      fi
+  }
+
+  export PS1=${PROMPT_START}\`exit_smiley\`${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
 
   # If we've installed git with homebrew, then we get completion this way
   if [ -e /usr/local/etc/bash_completion.d/git-completion.bash ]
