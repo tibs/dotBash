@@ -22,6 +22,31 @@ alias ls='ls -G'
 # Stuff I don't want on github...
 source ~/.bashrc_local
 
+# Some useful shortcuts for working with virtual environments
+# - I used to use virtualenvwrapper, but I'm not convinced I need all of that
+#   and I've had some bad experiences of it with Python 3
+
+# The directory where I keep my virtual environments - this must already exist
+VIRTUAL_ENV_DIR=${HOME}/.env
+
+function mkvirtualenv {
+    if [ $# != 1 ]
+    then
+        echo The name of a virtual environment must be specified
+        return 1
+    fi
+    python3 -m venv ${VIRTUAL_ENV_DIR}/${1}
+}
+
+function workon {
+    if [ $# != 1 ]
+    then
+        echo The name of a virtual environment must be specified
+        return 1
+    fi
+    source ${VIRTUAL_ENV_DIR}/${1}/bin/activate
+}
+
 # A convenient way to run a Jupyter notebook server
 alias jup="jupyter notebook --notebook-dir=${HOME}/jupyter-notebooks --no-browser --ip=0.0.0.0"
 
@@ -143,7 +168,7 @@ then
     fi
   }
 
-  # Thanks to Graham for the exit smiley idea
+  # Thanks to Bert for the exit smiley idea
   exit_smiley() {
       local EXIT="$?"
       if [ ${EXIT} != 0 ]; then
