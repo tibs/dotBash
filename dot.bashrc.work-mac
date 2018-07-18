@@ -58,6 +58,10 @@ export GOPATH=${HOME}/sw/go
 # Apparently I might also want to do:
 # export PATH=$PATH:$(go env GOPATH)/bin
 
+# If I've done "brew install coreutils" then it installs things on the PATH
+# with 'g' prefixes, and to make them available under the normal names suggest:
+export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
+
 # I've found this useful...
 function grin-replace {
 	if [ $# != 2 ]
