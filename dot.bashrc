@@ -41,21 +41,12 @@ export PATH=$PATH:${HOME}/sw/tstools/bin
 # Make weld available
 export PATH=$PATH:${HOME}/sw/weld
 
-# And Haskell stuff
-export PATH=$PATH:${HOME}/.cabal/bin
-
 # Muddle
 if [ -e ${HOME}/bin/setup_muddle.sh ]
 then
   alias setup_muddle='source ${HOME}/bin/setup_muddle.sh'
   source ${HOME}/bin/setup_muddle.sh
 fi
-
-# todo.txt
-alias todo="${HOME}/sw/todo.txt_cli/todo.sh"
-
-# when
-alias when="${HOME}/sw/when/when"
 
 # Opening a file in an existing Vim
 alias gv="gvim --remote-silent"
