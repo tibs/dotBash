@@ -3,6 +3,7 @@
 # Which computer am I on? (e.g., spoon, ghlenlivid, etc.)
 COMPUTER_NAME=`hostname -s`
 
+# Check "Digger" has been lower-cased
 if [ "${COMPUTER_NAME}" == "Digger" ]
 then
   COMPUTER_NAME="digger"
@@ -51,6 +52,8 @@ export PATH=$PATH:${HOME}/sw/weld
 
 # And Haskell stuff
 export PATH=$PATH:${HOME}/.cabal/bin
+
+export VIM_APP_DIR=/Applications/Extras
 
 # Muddle
 if [ -e ${HOME}/bin/setup_muddle.sh ]

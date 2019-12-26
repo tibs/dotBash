@@ -17,6 +17,9 @@ export PATH=$(brew --prefix)/bin:${PATH}
 export PATH=$PATH:${HOME}/Python
 export PYTHONPATH=${HOME}/Python:${PYTHONPATH}
 
+# A convenient way to run a Jupyter notebook server
+alias jup="jupyter notebook --notebook-dir=${HOME}/jupyter --no-browser --ip=0.0.0.0"
+
 # The git installer from git-scm.org puts its git into /usr/local/git
 # Choose that in preference to the system git
 export CURRENT_GIT_HOME=/usr/local/git
@@ -63,6 +66,7 @@ source ${CURRENT_GIT_HOME}/contrib/completion/git-completion.bash
 #fi
 source ${CURRENT_GIT_HOME}/contrib/completion/git-prompt.sh
 
-source $(brew --repository)/Library/Contributions/brew_bash_completion.sh
+### This seems to be the wrong location
+###source $(brew --repository)/Library/Contributions/brew_bash_completion.sh
 
 # vim: set tabstop=8 softtabstop=2 shiftwidth=2 expandtab filetype=sh:
