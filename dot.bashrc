@@ -143,20 +143,20 @@ alias patchdiff="diff -NbBrua"
 # Enable colour in listings at the terminal
 # HOSTTYPE appears to be defined on spot (which is FreeBSD), and not on
 # (for instance) sparkler, which is Linux
-if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
-then
-    alias ls='ls -G'
-else
-    alias ls='ls --color=auto'
-    ##if [ "$COMPUTER_NAME" == "sparkler" ]
-    ##then
-    ##  # And set the colours I want - this tries to avoid the yellow-on-white
-    ##  # effect I normally get for "mknod" file types
-    ##  LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=47;33:so=01;35:do=01;35:bd=47;33;01:cd=47;33;01:or=43;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:';
-    ##  export LS_COLORS
-    ##  # (see the dircolors utility for how to work out these commands)
-    ##fi
-fi
+#if [ "$HOSTTYPE" == "FreeBSD" -o "`uname`" == "Darwin" ]
+#then
+#    alias ls='ls -G'
+#else
+#    alias ls='ls --color=auto'
+#    ##if [ "$COMPUTER_NAME" == "sparkler" ]
+#    ##then
+#    ##  # And set the colours I want - this tries to avoid the yellow-on-white
+#    ##  # effect I normally get for "mknod" file types
+#    ##  LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=47;33:so=01;35:do=01;35:bd=47;33;01:cd=47;33;01:or=43;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:';
+#    ##  export LS_COLORS
+#    ##  # (see the dircolors utility for how to work out these commands)
+#    ##fi
+#fi
 
 # Maybe try using vi mode for command line editing, instead of (the default)
 # emacs mode... the snag is there's no visual indication of what mode one is in

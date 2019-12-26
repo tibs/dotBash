@@ -8,6 +8,9 @@
 # - the normal PATH
 export PATH=/usr/local/bin:${HOME}/bin:${PATH}
 
+# Add TeX stuff
+export PATH=${PATH}:/usr/local/texlive/2017basic/bin/x86_64-darwin/
+
 export EDITOR=/usr/bin/vim
 
 # Ask bash not to remember duplicate commands in its history list
@@ -19,6 +22,31 @@ alias ls='ls -G'
 # Stuff I don't want on github...
 source ~/.bashrc_local
 
+# Some useful shortcuts for working with virtual environments
+# - I used to use virtualenvwrapper, but I'm not convinced I need all of that
+#   and I've had some bad experiences of it with Python 3
+
+# The directory where I keep my virtual environments - this must already exist
+VIRTUAL_ENV_DIR=${HOME}/.env
+
+function mkvirtualenv {
+    if [ $# != 1 ]
+    then
+        echo The name of a virtual environment must be specified
+        return 1
+    fi
+    python3 -m venv ${VIRTUAL_ENV_DIR}/${1}
+}
+
+function workon {
+    if [ $# != 1 ]
+    then
+        echo The name of a virtual environment must be specified
+        return 1
+    fi
+    source ${VIRTUAL_ENV_DIR}/${1}/bin/activate
+}
+
 # A convenient way to run a Jupyter notebook server
 alias jup="jupyter notebook --notebook-dir=${HOME}/jupyter-notebooks --no-browser --ip=0.0.0.0"
 
@@ -29,6 +57,10 @@ export PATH=$PATH:/usr/local/opt/go/libexec/bin
 export GOPATH=${HOME}/sw/go
 # Apparently I might also want to do:
 # export PATH=$PATH:$(go env GOPATH)/bin
+
+# If I've done "brew install coreutils" then it installs things on the PATH
+# with 'g' prefixes, and to make them available under the normal names suggest:
+export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH
 
 # I've found this useful...
 function grin-replace {
@@ -87,7 +119,9 @@ then
 
   # Emphasise the hostname in bold red. Use the COMPUTER_NAME rather than \h,
   # since \g uses "hostname" to calculate its value
-  PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
+  # PROMPT_START="\u@${FRED}${COMPUTER_NAME}${RS} \W"
+  # Or just the user name in red, followed by the current directory
+  PROMPT_START="${FRED}\u${RS} \W"
   PROMPT_END="\$ "
   #export PS1=${PROMPT_START}${PROMPT_END}
 
@@ -138,7 +172,17 @@ then
     fi
   }
 
-  export PS1=${PROMPT_START}${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
+  # Thanks to Bert for the exit smiley idea
+  exit_smiley() {
+      local EXIT="$?"
+      if [ ${EXIT} != 0 ]; then
+          echo ' 😡 '
+      else
+          echo ' 😃 '
+      fi
+  }
+
+  export PS1=${PROMPT_START}\`exit_smiley\`${FGRN}\`parse_git_branch\`${RS}${PROMPT_END}
 
   # If we've installed git with homebrew, then we get completion this way
   if [ -e /usr/local/etc/bash_completion.d/git-completion.bash ]
